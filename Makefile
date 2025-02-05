@@ -30,4 +30,9 @@ src/c2_server.o: src/c2_server.c
 clean:
 	rm -f src/*.o
 
+fclean: clean
+	rm -f libmalware.so c2_server
+
+re: fclean all
+
 .PHONY: all clean fclean re
