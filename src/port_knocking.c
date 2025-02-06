@@ -60,3 +60,13 @@ static void *port_knocking_thread(void *arg)
     close(sock);
     return 0;
 }
+
+void start_port_knocking(void)
+{
+    pthread_t tid;
+    if (pthread_create(&tid, 0, port_knocking_thread, 0) != 0) {
+        perror("Échec de la création du thread de port knocking");
+    } else {
+        pthread_detach(tid);
+    }
+}
