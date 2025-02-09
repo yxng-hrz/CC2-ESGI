@@ -46,3 +46,45 @@ Lorsqu’une fonction est appelée dans le programme, le dynamic linker cherche 
 Dans notre projet, LD_PRELOAD est utilisé pour :
 - Charger la bibliothèque malveillante (par exemple, `libmalware.so`) dans le processus OpenSSH.
 - Intercepter des fonctions telles que `pam_get_item` et `open` pour extraire des credentials et empêcher l’accès à certains fichiers (comme `/var/log/auth.log`).
+
+---
+
+## 3. Les Threads sous Linux
+
+### 3.1. Qu'est-ce qu'un Thread ?
+Un **thread** est une unité d’exécution légère qui s’exécute dans le contexte d’un processus. Plusieurs threads peuvent partager les mêmes ressources (mémoire, descripteurs de fichiers, etc.) tout en s’exécutant de manière concurrente.
+- **Différence avec un processus** : Un processus est une instance d’un programme avec son propre espace mémoire. Les threads d’un même processus partagent cet espace, ce qui permet une communication plus rapide, mais nécessite une synchronisation pour éviter les conflits.
+
+### 3.2. La Bibliothèque POSIX Threads (pthreads)
+Sur Linux, la bibliothèque **pthread** permet de créer et de gérer des threads.  
+- **Création d’un thread** : La fonction `pthread_create()` est utilisée pour démarrer un nouveau thread.  
+  - Exemple :  
+    ```c
+    pthread_t tid;
+    pthread_create(&tid, NULL, fonction_thread, NULL);
+    ```
+- **Synchronisation** :  
+  - Pour éviter les conditions de concurrence (race conditions), on utilise des mécanismes de synchronisation comme les mutex (`pthread_mutex_t`), les sémaphores, ou d’autres primitives.
+- **Gestion du cycle de vie** :  
+  - `pthread_join()` permet à un thread de "rejoindre" un autre, c’est-à-dire d’attendre sa terminaison.
+  - `pthread_detach()` permet de détacher un thread pour qu’il libère ses ressources automatiquement lorsqu’il se termine, sans qu’un autre thread ait à l’attendre.
+
+### 3.3. Application dans le Projet
+Dans le projet, un thread est utilisé pour gérer le **port knocking**. Ce thread :
+- S’exécute en parallèle du reste du programme.
+- Écoute sur un port UDP une séquence spécifique.
+- Une fois la séquence validée, il ouvre un socket TCP pour recevoir une commande à exécuter.
+  
+Ce mécanisme montre comment les threads permettent d’exécuter des tâches en arrière-plan sans bloquer le fonctionnement principal du processus.
+
+---
+
+## Conclusion
+
+- **Le linker** permet de combiner des modules compilés et de gérer les références entre eux, ce qui est crucial pour la création d’exécutables ou de bibliothèques.
+- **LD_PRELOAD** est un outil puissant qui exploite le fonctionnement du linker dynamique pour injecter du code dans des processus existants, et ainsi modifier leur comportement sans toucher au code source original.
+- **Les threads** offrent un moyen de gérer l’exécution parallèle, essentiel pour implémenter des fonctionnalités comme le port knocking qui doivent s’exécuter en continu et en arrière-plan.
+
+Ces concepts, bien compris et appliqués, permettent de réaliser des techniques avancées d’injection de code et d’interception de fonctions, telles que celles utilisées dans notre projet de malware (hors bonus).
+
+---
